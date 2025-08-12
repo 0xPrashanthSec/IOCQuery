@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>IOC Hunter - KQL Query Generator</title>
+        <!-- 
+    IOC Hunter - KQL Query Generator
+    Author: Saiprashanth Pulisetti
+    SOC Lead & Security Researcher
+    Version: 2.0.1 Production Release
+    Created: 10-08-2025
+    A comprehensive tool for converting IOCs to KQL (ECS) Queries
+-->
+    <link rel="stylesheet" href="style.css">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+</head>
+<body data-color-scheme="light">
+    <div class="app-container">
+        <header class="modern-header">
+            <div class="header-content">
+                <div class="logo-section">
+                    <div class="logo-icon">
+                        <i class="fas fa-search-plus"></i>
+                    </div>
+                    <div class="logo-text">
+                        <h1 class="app-title">IOC Hunter</h1>
+                        <p class="app-subtitle">KQL Query Generator for Threat Intelligence</p>
+                    </div>
+                </div>
+            </div>
+        </header>
+
+        <main class="main-content">
+            <section class="input-section">
+                <div class="section-header">
+                    <h2><i class="fas fa-paste mr-2"></i>Input Intelligence Data</h2>
+                    <p class="section-description">Paste your threat intelligence text below to extract IOCs automatically</p>
+                </div>
+                
+                <div class="input-card">
+                    <div class="form-group">
+                        <label for="iocInput" class="form-label">
+                            <i class="fas fa-file-text mr-1"></i>
+                            Threat Intelligence Text
+                            <span class="help-text">Articles, reports, blogs, or any text containing indicators of compromise</span>
+                        </label>
+                        <div class="textarea-container">
+                            <textarea 
+                                id="iocInput" 
+                                class="form-control modern-textarea" 
+                                placeholder="Paste your threat intelligence text here...
+
+Example content:
+Threat Report: APT29 Campaign Analysis
+
+IP Addresses:
+- 192.168.1.100 (C2 server)
+- 203.0.113.45 (exfiltration server)
+
+File Hashes:
+MD5: 5d41402abc4b2a76b9719d911017c592
+SHA256: 2c26b46b68ffc68ff99b453c1d30413413422d706483bfa0f98a5e886266e7ae
+
+URLs:
+- https://malicious-domain.com/payload.exe
+- http://evil-site.org/data-exfil
+
+Domains:
+- malicious-domain.com
+- c2-server.net"></textarea>
+                            <div class="textarea-footer">
+                                <div class="char-counter">
+                                    <i class="fas fa-keyboard"></i>
+                                    <span id="charCount">0</span> characters
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="action-buttons">
+                        <button id="extractBtn" class="btn btn--primary btn--large">
+                            <i class="fas fa-magic"></i>
+                            <span>Extract IOCs</span>
+                        </button>
+                        <button id="loadSampleBtn" class="btn btn--secondary">
+                            <i class="fas fa-file-import"></i>
+                            <span>Load Sample</span>
+                        </button>
+                        <button id="clearBtn" class="btn btn--outline">
+                            <i class="fas fa-eraser"></i>
+                            <span>Clear All</span>
+                        </button>
+                    </div>
+                </div>
+            </section>
+
+            <section id="resultsSection" class="results-section hidden">
+                <div class="section-header">
+                    <h2><i class="fas fa-chart-bar mr-2"></i>Extraction Results</h2>
+                    <div class="header-actions">
+                        <button id="exportBtn" class="btn btn--success btn--sm">
+                            <i class="fas fa-download"></i>
+                            <span>Export Results</span>
+                        </button>
+                    </div>
+                </div>
+
+                <div id="statsCards" class="stats-grid">
+                    <!-- Stats cards will be populated by JavaScript -->
+                </div>
+
+                <div class="results-grid">
+                    <div class="results-panel">
+                        <div class="panel-header">
+                            <h3><i class="fas fa-list-ul"></i>Extracted IOCs</h3>
+                        </div>
+                        <div id="iocsContent" class="panel-content">
+                            <!-- IOCs content will be populated by JavaScript -->
+                        </div>
+                    </div>
+
+                    <div class="results-panel">
+                        <div class="panel-header">
+                            <h3><i class="fas fa-code"></i>Generated KQL Queries</h3>
+                        </div>
+                        <div id="kqlContent" class="panel-content">
+                            <!-- KQL queries will be populated by JavaScript -->
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <section id="emptyState" class="empty-state">
+                <div class="empty-icon">
+                    <i class="fas fa-search-plus"></i>
+                </div>
+                <h3>Ready to Hunt IOCs</h3>
+                <p>Paste your threat intelligence text above and click "Extract IOCs" to generate KQL queries using Elastic Common Schema field mappings.</p>
+                <div class="empty-features">
+                    <div class="feature">
+                        <i class="fas fa-bolt text-primary"></i>
+                        <span>Real-time extraction</span>
+                    </div>
+                    <div class="feature">
+                        <i class="fas fa-shield-alt text-success"></i>
+                        <span>ECS field mapping</span>
+                    </div>
+                    <div class="feature">
+                        <i class="fas fa-copy text-info"></i>
+                        <span>One-click copy</span>
+                    </div>
+                </div>
+            </section>
+        </main>
+
+        <footer class="modern-footer">
+            <div class="footer-content">
+                <div class="author-section">
+                    <div class="author-avatar">
+                        <i class="fas fa-user-shield"></i>
+                    </div>
+                    <div class="author-info">
+                        <h4 class="author-name"></h4>
+
+                    </div>
+                </div>
+                <div class="footer-meta">
+                    <p>&copy; 2025 IOC Hunter. Built for cybersecurity professionals.</p>
+                    <div class="tech-stack">
+                        <span class="tech-badge">KQL</span>
+                        <span class="tech-badge">ECS</span>
+                    </div>
+                </div>
+            </div>
+        </footer>
+    </div>
+
+    <!-- Toast notification -->
+    <div id="toast" class="toast hidden">
+        <div class="toast-content">
+            <i class="toast-icon"></i>
+            <span id="toastMessage"></span>
+        </div>
+    </div>
+
+    <!-- Keyboard shortcuts help -->
+    <div class="shortcuts-help">
+        <div class="shortcut">
+            <kbd>Ctrl</kbd> + <kbd>Enter</kbd> - Extract IOCs
+        </div>
+        <div class="shortcut">
+            <kbd>Ctrl</kbd> + <kbd>L</kbd> - Load Sample
+        </div>
+        <div class="shortcut">
+            <kbd>Esc</kbd> - Clear All
+        </div>
+    </div>
+
+    <script src="app.js"></script>
+</body>
+</html>
