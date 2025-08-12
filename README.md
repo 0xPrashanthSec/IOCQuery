@@ -281,10 +281,7 @@ We welcome contributions from the cybersecurity community! Here's how you can he
 - **Community**: Join discussions in our GitHub Discussions
 
 ### **Author Information**
-**Developed by**: SOC Team Lead  
-**Title**: Cyber Security (SOC) Team Lead  
-**Location**: Jagtial, TS, India  
-**Specialization**: Threat hunting, malware analysis, and security operations  
+**Developed by**: @prashanthblogs 
 
 *Passionate about developing tools that empower cybersecurity professionals and enhance security operations efficiency.*
 
@@ -324,6 +321,6 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 ---
 
 
-**Made with ❤️ for the Cybersecurity Community** - **By** **@prashanthblogs**
+**Made with ❤️ for the Cybersecurity Community**
 
 *IOC Hunter – Transforming threat intelligence into actionable security operations.*
