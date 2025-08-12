@@ -3,15 +3,14 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>IOC Hunter - KQL Query Generator</title>
-        <!-- 
-    IOC Hunter - KQL Query Generator
+    <title>IOC Hunter – Multi-SIEM Query Generator</title>
+    <!-- 
+    IOC Hunter - Multi-SIEM Query Generator
     Author: Saiprashanth Pulisetti
     SOC Lead & Security Researcher
-    Version: 2.0.1 Production Release
+    Version: 2.0.5 Production Release
     Created: 10-08-2025
-    A comprehensive tool for converting IOCs to KQL (ECS) Queries
--->
+    A comprehensive tool for converting IOCs to Multiple Queries -->
     <link rel="stylesheet" href="style.css">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
 </head>
@@ -24,9 +23,22 @@
                         <i class="fas fa-search-plus"></i>
                     </div>
                     <div class="logo-text">
-                        <h1 class="app-title">IOC Hunter</h1>
-                        <p class="app-subtitle">KQL Query Generator for Threat Intelligence</p>
+                        <h1 class="app-title">IOC Hunter – Multi-SIEM</h1>
+                        <p class="app-subtitle">Universal Query Generator for Threat Intelligence</p>
                     </div>
+                </div>
+                <div class="siem-selector-header">
+                    <label for="siemSelect" class="siem-label">
+                        <i class="fas fa-server mr-1"></i>
+                        Target SIEM
+                    </label>
+                    <select id="siemSelect" class="siem-select">
+                        <option value="Elastic SIEM">Elastic Security</option>
+                        <option value="Microsoft Sentinel">Microsoft Sentinel</option>
+                        <option value="IBM QRadar">IBM QRadar</option>
+                        <option value="Splunk">Splunk</option>
+                        <option value="ArcSight">ArcSight Logger/ESM</option>
+                    </select>
                 </div>
             </div>
         </header>
@@ -99,9 +111,17 @@ Domains:
                 <div class="section-header">
                     <h2><i class="fas fa-chart-bar mr-2"></i>Extraction Results</h2>
                     <div class="header-actions">
-                        <button id="exportBtn" class="btn btn--success btn--sm">
-                            <i class="fas fa-download"></i>
-                            <span>Export Results</span>
+                        <button id="bulkCopyBtn" class="btn btn--success btn--sm">
+                            <i class="fas fa-copy"></i>
+                            <span>Copy All Queries</span>
+                        </button>
+                        <button id="exportTxtBtn" class="btn btn--secondary btn--sm">
+                            <i class="fas fa-file-text"></i>
+                            <span>Export TXT</span>
+                        </button>
+                        <button id="exportJsonBtn" class="btn btn--secondary btn--sm">
+                            <i class="fas fa-file-code"></i>
+                            <span>Export JSON</span>
                         </button>
                     </div>
                 </div>
@@ -122,10 +142,11 @@ Domains:
 
                     <div class="results-panel">
                         <div class="panel-header">
-                            <h3><i class="fas fa-code"></i>Generated KQL Queries</h3>
+                            <h3><i class="fas fa-code"></i>Generated <span id="queryLanguage">KQL</span> Queries</h3>
+                            <div class="platform-badge" id="platformBadge">Elastic Security</div>
                         </div>
-                        <div id="kqlContent" class="panel-content">
-                            <!-- KQL queries will be populated by JavaScript -->
+                        <div id="queriesContent" class="panel-content">
+                            <!-- SIEM queries will be populated by JavaScript -->
                         </div>
                     </div>
                 </div>
@@ -136,15 +157,15 @@ Domains:
                     <i class="fas fa-search-plus"></i>
                 </div>
                 <h3>Ready to Hunt IOCs</h3>
-                <p>Paste your threat intelligence text above and click "Extract IOCs" to generate KQL queries using Elastic Common Schema field mappings.</p>
+                <p>Paste your threat intelligence text above and click "Extract IOCs" to generate queries for your selected SIEM platform. Choose your target SIEM from the dropdown in the header.</p>
                 <div class="empty-features">
                     <div class="feature">
                         <i class="fas fa-bolt text-primary"></i>
                         <span>Real-time extraction</span>
                     </div>
                     <div class="feature">
-                        <i class="fas fa-shield-alt text-success"></i>
-                        <span>ECS field mapping</span>
+                        <i class="fas fa-server text-success"></i>
+                        <span>Multi-SIEM support</span>
                     </div>
                     <div class="feature">
                         <i class="fas fa-copy text-info"></i>
@@ -161,15 +182,16 @@ Domains:
                         <i class="fas fa-user-shield"></i>
                     </div>
                     <div class="author-info">
-                        <h4 class="author-name"></h4>
-
                     </div>
                 </div>
                 <div class="footer-meta">
-                    <p>&copy; 2025 IOC Hunter. Built for cybersecurity professionals.</p>
+                    <p>&copy; 2025 IOC Hunter – Multi-SIEM. Built for cybersecurity professionals.</p>
                     <div class="tech-stack">
+                        <span class="tech-badge">JavaScript</span>
                         <span class="tech-badge">KQL</span>
-                        <span class="tech-badge">ECS</span>
+                        <span class="tech-badge">AQL</span>
+                        <span class="tech-badge">SPL</span>
+                        <span class="tech-badge">CEF</span>
                     </div>
                 </div>
             </div>
