@@ -13,208 +13,214 @@ class MultiSIEMIOCHunter {
         };
 
         // SIEM platform mappings
-        this.siemMappings = {
-            "Elastic SIEM": {
-                "language": "KQL",
-                "field_mappings": {
-                    "ipv4": {
-                        "fields": ["source.ip", "destination.ip", "client.ip", "server.ip"],
-                        "template": "{field}:\"{value}\"",
-                        "combine_operator": " OR "
-                    },
-                    "md5": {
-                        "fields": ["file.hash.md5", "process.hash.md5", "file.pe.imphash"],
-                        "template": "{field}:\"{value}\"",
-                        "combine_operator": " OR "
-                    },
-                    "sha1": {
-                        "fields": ["file.hash.sha1", "process.hash.sha1"],
-                        "template": "{field}:\"{value}\"",
-                        "combine_operator": " OR "
-                    },
-                    "sha256": {
-                        "fields": ["file.hash.sha256", "process.hash.sha256"],
-                        "template": "{field}:\"{value}\"",
-                        "combine_operator": " OR "
-                    },
-                    "sha512": {
-                        "fields": ["file.hash.sha512", "process.hash.sha512"],
-                        "template": "{field}:\"{value}\"",
-                        "combine_operator": " OR "
-                    },
-                    "url": {
-                        "fields": ["url.original", "url.full", "http.request.url"],
-                        "template": "{field}:\"{value}\"",
-                        "combine_operator": " OR "
-                    },
-                    "domain": {
-                        "fields": ["destination.domain", "source.domain", "dns.question.name"],
-                        "template": "{field}:\"{value}\"",
-                        "combine_operator": " OR "
-                    }
-                }
+        // Replace this entire siemMappings object in app.js
+this.siemMappings = {
+    "Elastic SIEM": {
+        "language": "KQL",
+        "field_mappings": {
+            "ipv4": {
+                "fields": ["source.ip", "destination.ip", "client.ip", "server.ip"],
+                "template": "{field}:\"{value}\"",
+                "combine_operator": " OR "
             },
-            "Microsoft Sentinel": {
-                "language": "KQL",
-                "field_mappings": {
-                    "ipv4": {
-                        "fields": ["source.ip", "destination.ip", "SrcIpAddr", "DstIpAddr", "RemoteIP", "ClientIP"],
-                        "template": "({field}:\"{value}\")",
-                        "combine_operator": " OR "
-                    },
-                    "md5": {
-                        "fields": ["file.hash.md5", "process.hash.md5", "InitiatingProcessMD5", "SHA1", "FileHash"],
-                        "template": "({field}:\"{value}\")",
-                        "combine_operator": " OR "
-                    },
-                    "sha1": {
-                        "fields": ["file.hash.sha1", "process.hash.sha1", "InitiatingProcessSHA1", "SHA1"],
-                        "template": "({field}:\"{value}\")",
-                        "combine_operator": " OR "
-                    },
-                    "sha256": {
-                        "fields": ["file.hash.sha256", "process.hash.sha256", "InitiatingProcessSHA256", "SHA256"],
-                        "template": "({field}:\"{value}\")",
-                        "combine_operator": " OR "
-                    },
-                    "sha512": {
-                        "fields": ["file.hash.sha512", "process.hash.sha512"],
-                        "template": "({field}:\"{value}\")",
-                        "combine_operator": " OR "
-                    },
-                    "url": {
-                        "fields": ["url.original", "Url", "RequestURL", "UrlOriginal"],
-                        "template": "({field}:\"{value}\")",
-                        "combine_operator": " OR "
-                    },
-                    "domain": {
-                        "fields": ["destination.domain", "source.domain", "DnsQuery", "RemoteDomain"],
-                        "template": "({field}:\"{value}\")",
-                        "combine_operator": " OR "
-                    }
-                }
+            "md5": {
+                "fields": ["file.hash.md5", "process.hash.md5", "file.pe.imphash"],
+                "template": "{field}:\"{value}\"",
+                "combine_operator": " OR "
             },
-            "IBM QRadar": {
-                "language": "AQL",
-                "field_mappings": {
-                    "ipv4": {
-                        "fields": ["sourceip", "destinationip"],
-                        "template": "{field} = '{value}'",
-                        "combine_operator": " OR "
-                    },
-                    "md5": {
-                        "fields": ["TEXT SEARCH"],
-                        "template": "TEXT SEARCH = '{value}'",
-                        "combine_operator": " OR "
-                    },
-                    "sha1": {
-                        "fields": ["TEXT SEARCH"],
-                        "template": "TEXT SEARCH = '{value}'",
-                        "combine_operator": " OR "
-                    },
-                    "sha256": {
-                        "fields": ["TEXT SEARCH"],
-                        "template": "TEXT SEARCH = '{value}'",
-                        "combine_operator": " OR "
-                    },
-                    "sha512": {
-                        "fields": ["TEXT SEARCH"],
-                        "template": "TEXT SEARCH = '{value}'",
-                        "combine_operator": " OR "
-                    },
-                    "url": {
-                        "fields": ["TEXT SEARCH"],
-                        "template": "TEXT SEARCH = '{value}'",
-                        "combine_operator": " OR "
-                    },
-                    "domain": {
-                        "fields": ["TEXT SEARCH"],
-                        "template": "TEXT SEARCH = '{value}'",
-                        "combine_operator": " OR "
-                    }
-                }
+            "sha1": {
+                "fields": ["file.hash.sha1", "process.hash.sha1"],
+                "template": "{field}:\"{value}\"",
+                "combine_operator": " OR "
             },
-            "Splunk": {
-                "language": "SPL",
-                "field_mappings": {
-                    "ipv4": {
-                        "fields": ["src_ip", "dest_ip", "src", "dest", "clientip", "remote_ip"],
-                        "template": "{field}=\"{value}\"",
-                        "combine_operator": " OR "
-                    },
-                    "md5": {
-                        "fields": ["file_hash", "hash", "md5", "file_md5"],
-                        "template": "{field}=\"{value}\"",
-                        "combine_operator": " OR "
-                    },
-                    "sha1": {
-                        "fields": ["file_hash", "hash", "sha1", "file_sha1"],
-                        "template": "{field}=\"{value}\"",
-                        "combine_operator": " OR "
-                    },
-                    "sha256": {
-                        "fields": ["file_hash", "hash", "sha256", "file_sha256"],
-                        "template": "{field}=\"{value}\"",
-                        "combine_operator": " OR "
-                    },
-                    "sha512": {
-                        "fields": ["file_hash", "hash", "sha512", "file_sha512"],
-                        "template": "{field}=\"{value}\"",
-                        "combine_operator": " OR "
-                    },
-                    "url": {
-                        "fields": ["url", "uri", "request_url", "http_url"],
-                        "template": "{field}=\"{value}\"",
-                        "combine_operator": " OR "
-                    },
-                    "domain": {
-                        "fields": ["domain", "dest_domain", "dns_query", "hostname"],
-                        "template": "{field}=\"{value}\"",
-                        "combine_operator": " OR "
-                    }
-                }
+            "sha256": {
+                "fields": ["file.hash.sha256", "process.hash.sha256"],
+                "template": "{field}:\"{value}\"",
+                "combine_operator": " OR "
             },
-            "ArcSight": {
-                "language": "CEF",
-                "field_mappings": {
-                    "ipv4": {
-                        "fields": ["deviceAddress", "sourceAddress", "destinationAddress"],
-                        "template": "{field} = \"{value}\"",
-                        "combine_operator": " OR "
-                    },
-                    "md5": {
-                        "fields": ["fileHash", "oldFileHash", "cs1", "cs2"],
-                        "template": "{field} = \"{value}\"",
-                        "combine_operator": " OR "
-                    },
-                    "sha1": {
-                        "fields": ["fileHash", "oldFileHash", "cs1", "cs2"],
-                        "template": "{field} = \"{value}\"",
-                        "combine_operator": " OR "
-                    },
-                    "sha256": {
-                        "fields": ["fileHash", "oldFileHash", "cs1", "cs2"],
-                        "template": "{field} = \"{value}\"",
-                        "combine_operator": " OR "
-                    },
-                    "sha512": {
-                        "fields": ["fileHash", "oldFileHash", "cs1", "cs2"],
-                        "template": "{field} = \"{value}\"",
-                        "combine_operator": " OR "
-                    },
-                    "url": {
-                        "fields": ["requestURL", "request", "cs3", "cs4"],
-                        "template": "{field} = \"{value}\"",
-                        "combine_operator": " OR "
-                    },
-                    "domain": {
-                        "fields": ["destinationDnsDomain", "sourceDnsDomain", "cs5", "cs6"],
-                        "template": "{field} = \"{value}\"",
-                        "combine_operator": " OR "
-                    }
-                }
+            "sha512": {
+                "fields": ["file.hash.sha512", "process.hash.sha512"],
+                "template": "{field}:\"{value}\"",
+                "combine_operator": " OR "
+            },
+            "url": {
+                "fields": ["url.original", "url.full", "http.request.url"],
+                "template": "{field}:\"{value}\"",
+                "combine_operator": " OR "
+            },
+            "domain": {
+                "fields": ["destination.domain", "source.domain", "dns.question.name"],
+                "template": "{field}:\"{value}\"",
+                "combine_operator": " OR "
             }
-        };
+        }
+    },
+    
+    "Microsoft Sentinel": {
+        "language": "KQL",
+        "field_mappings": {
+            "ipv4": {
+                "fields": ["SrcIpAddr", "DstIpAddr", "ClientIP", "RemoteIP"],
+                "template": "{field} == \"{value}\"",
+                "combine_operator": " or "
+            },
+            "md5": {
+                "fields": ["InitiatingProcessMD5", "FileHash", "Hash"],
+                "template": "{field} == \"{value}\"",
+                "combine_operator": " or "
+            },
+            "sha1": {
+                "fields": ["InitiatingProcessSHA1", "FileHash", "Hash"],
+                "template": "{field} == \"{value}\"",
+                "combine_operator": " or "
+            },
+            "sha256": {
+                "fields": ["InitiatingProcessSHA256", "FileHash", "Hash"],
+                "template": "{field} == \"{value}\"",
+                "combine_operator": " or "
+            },
+            "sha512": {
+                "fields": ["FileHash", "Hash"],
+                "template": "{field} == \"{value}\"",
+                "combine_operator": " or "
+            },
+            "url": {
+                "fields": ["Url", "RequestURL", "UrlOriginal"],
+                "template": "{field} == \"{value}\"",
+                "combine_operator": " or "
+            },
+            "domain": {
+                "fields": ["DnsQuery", "RemoteDomain", "RequestDomain"],
+                "template": "{field} == \"{value}\"",
+                "combine_operator": " or "
+            }
+        }
+    },
+    
+    "IBM QRadar": {
+        "language": "AQL",
+        "field_mappings": {
+            "ipv4": {
+                "fields": ["sourceip", "destinationip"],
+                "template": "{field} = '{value}'",
+                "combine_operator": " OR "
+            },
+            "md5": {
+                "fields": ["TEXT SEARCH"],
+                "template": "TEXT SEARCH = '{value}'",
+                "combine_operator": " OR "
+            },
+            "sha1": {
+                "fields": ["TEXT SEARCH"],
+                "template": "TEXT SEARCH = '{value}'",
+                "combine_operator": " OR "
+            },
+            "sha256": {
+                "fields": ["TEXT SEARCH"],
+                "template": "TEXT SEARCH = '{value}'",
+                "combine_operator": " OR "
+            },
+            "sha512": {
+                "fields": ["TEXT SEARCH"],
+                "template": "TEXT SEARCH = '{value}'",
+                "combine_operator": " OR "
+            },
+            "url": {
+                "fields": ["TEXT SEARCH"],
+                "template": "TEXT SEARCH = '{value}'",
+                "combine_operator": " OR "
+            },
+            "domain": {
+                "fields": ["TEXT SEARCH"],
+                "template": "TEXT SEARCH = '{value}'",
+                "combine_operator": " OR "
+            }
+        }
+    },
+    
+    "Splunk": {
+        "language": "SPL",
+        "field_mappings": {
+            "ipv4": {
+                "fields": ["src_ip", "dest_ip", "src", "dest"],
+                "template": "{field}=\"{value}\"",
+                "combine_operator": " OR "
+            },
+            "md5": {
+                "fields": ["file_hash", "hash", "md5"],
+                "template": "{field}=\"{value}\"",
+                "combine_operator": " OR "
+            },
+            "sha1": {
+                "fields": ["file_hash", "hash", "sha1"],
+                "template": "{field}=\"{value}\"",
+                "combine_operator": " OR "
+            },
+            "sha256": {
+                "fields": ["file_hash", "hash", "sha256"],
+                "template": "{field}=\"{value}\"",
+                "combine_operator": " OR "
+            },
+            "sha512": {
+                "fields": ["file_hash", "hash", "sha512"],
+                "template": "{field}=\"{value}\"",
+                "combine_operator": " OR "
+            },
+            "url": {
+                "fields": ["url", "uri", "request_url"],
+                "template": "{field}=\"{value}\"",
+                "combine_operator": " OR "
+            },
+            "domain": {
+                "fields": ["domain", "dest_domain", "dns_query"],
+                "template": "{field}=\"{value}\"",
+                "combine_operator": " OR "
+            }
+        }
+    },
+    
+    "ArcSight": {
+        "language": "CEF",
+        "field_mappings": {
+            "ipv4": {
+                "fields": ["sourceAddress", "destinationAddress"],
+                "template": "{field} = \"{value}\"",
+                "combine_operator": " OR "
+            },
+            "md5": {
+                "fields": ["fileHash", "oldFileHash"],
+                "template": "{field} = \"{value}\"",
+                "combine_operator": " OR "
+            },
+            "sha1": {
+                "fields": ["fileHash", "oldFileHash"],
+                "template": "{field} = \"{value}\"",
+                "combine_operator": " OR "
+            },
+            "sha256": {
+                "fields": ["fileHash", "oldFileHash"],
+                "template": "{field} = \"{value}\"",
+                "combine_operator": " OR "
+            },
+            "sha512": {
+                "fields": ["fileHash", "oldFileHash"],
+                "template": "{field} = \"{value}\"",
+                "combine_operator": " OR "
+            },
+            "url": {
+                "fields": ["requestURL", "request"],
+                "template": "{field} = \"{value}\"",
+                "combine_operator": " OR "
+            },
+            "domain": {
+                "fields": ["destinationDnsDomain", "sourceDnsDomain"],
+                "template": "{field} = \"{value}\"",
+                "combine_operator": " OR "
+            }
+        }
+    }
+};
+
 
         this.sampleText = `Threat Report: APT29 Campaign Analysis
 
