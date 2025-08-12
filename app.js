@@ -1,6 +1,7 @@
-// Modern IOC Hunter Application - Fixed Version
-class ModernIOCHunter {
+// Modern IOC Hunter Multi-SIEM Application
+class MultiSIEMIOCHunter {
     constructor() {
+        // Regex patterns for IOC extraction
         this.patterns = {
             ipv4: /\b(?:(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.){3}(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\b/g,
             md5: /\b[a-fA-F0-9]{32}\b/g,
@@ -11,14 +12,208 @@ class ModernIOCHunter {
             domain: /\b[a-zA-Z0-9]([a-zA-Z0-9\-]{0,61}[a-zA-Z0-9])?\.([a-zA-Z0-9]([a-zA-Z0-9\-]{0,61}[a-zA-Z0-9])?\.)*[a-zA-Z]{2,}\b/g
         };
 
-        this.ecsMapping = {
-            ipv4: ['source.ip', 'destination.ip'],
-            md5: ['file.hash.md5', 'process.hash.md5'],
-            sha1: ['file.hash.sha1', 'process.hash.sha1'],
-            sha256: ['file.hash.sha256', 'process.hash.sha256'],
-            sha512: ['file.hash.sha512', 'process.hash.sha512'],
-            url: ['url.original'],
-            domain: ['destination.domain', 'source.domain']
+        // SIEM platform mappings
+        this.siemMappings = {
+            "Elastic SIEM": {
+                "language": "KQL",
+                "field_mappings": {
+                    "ipv4": {
+                        "fields": ["source.ip", "destination.ip", "client.ip", "server.ip"],
+                        "template": "{field}:\"{value}\"",
+                        "combine_operator": " OR "
+                    },
+                    "md5": {
+                        "fields": ["file.hash.md5", "process.hash.md5", "file.pe.imphash"],
+                        "template": "{field}:\"{value}\"",
+                        "combine_operator": " OR "
+                    },
+                    "sha1": {
+                        "fields": ["file.hash.sha1", "process.hash.sha1"],
+                        "template": "{field}:\"{value}\"",
+                        "combine_operator": " OR "
+                    },
+                    "sha256": {
+                        "fields": ["file.hash.sha256", "process.hash.sha256"],
+                        "template": "{field}:\"{value}\"",
+                        "combine_operator": " OR "
+                    },
+                    "sha512": {
+                        "fields": ["file.hash.sha512", "process.hash.sha512"],
+                        "template": "{field}:\"{value}\"",
+                        "combine_operator": " OR "
+                    },
+                    "url": {
+                        "fields": ["url.original", "url.full", "http.request.url"],
+                        "template": "{field}:\"{value}\"",
+                        "combine_operator": " OR "
+                    },
+                    "domain": {
+                        "fields": ["destination.domain", "source.domain", "dns.question.name"],
+                        "template": "{field}:\"{value}\"",
+                        "combine_operator": " OR "
+                    }
+                }
+            },
+            "Microsoft Sentinel": {
+                "language": "KQL",
+                "field_mappings": {
+                    "ipv4": {
+                        "fields": ["source.ip", "destination.ip", "SrcIpAddr", "DstIpAddr", "RemoteIP", "ClientIP"],
+                        "template": "({field}:\"{value}\")",
+                        "combine_operator": " OR "
+                    },
+                    "md5": {
+                        "fields": ["file.hash.md5", "process.hash.md5", "InitiatingProcessMD5", "SHA1", "FileHash"],
+                        "template": "({field}:\"{value}\")",
+                        "combine_operator": " OR "
+                    },
+                    "sha1": {
+                        "fields": ["file.hash.sha1", "process.hash.sha1", "InitiatingProcessSHA1", "SHA1"],
+                        "template": "({field}:\"{value}\")",
+                        "combine_operator": " OR "
+                    },
+                    "sha256": {
+                        "fields": ["file.hash.sha256", "process.hash.sha256", "InitiatingProcessSHA256", "SHA256"],
+                        "template": "({field}:\"{value}\")",
+                        "combine_operator": " OR "
+                    },
+                    "sha512": {
+                        "fields": ["file.hash.sha512", "process.hash.sha512"],
+                        "template": "({field}:\"{value}\")",
+                        "combine_operator": " OR "
+                    },
+                    "url": {
+                        "fields": ["url.original", "Url", "RequestURL", "UrlOriginal"],
+                        "template": "({field}:\"{value}\")",
+                        "combine_operator": " OR "
+                    },
+                    "domain": {
+                        "fields": ["destination.domain", "source.domain", "DnsQuery", "RemoteDomain"],
+                        "template": "({field}:\"{value}\")",
+                        "combine_operator": " OR "
+                    }
+                }
+            },
+            "IBM QRadar": {
+                "language": "AQL",
+                "field_mappings": {
+                    "ipv4": {
+                        "fields": ["sourceip", "destinationip"],
+                        "template": "{field} = '{value}'",
+                        "combine_operator": " OR "
+                    },
+                    "md5": {
+                        "fields": ["TEXT SEARCH"],
+                        "template": "TEXT SEARCH = '{value}'",
+                        "combine_operator": " OR "
+                    },
+                    "sha1": {
+                        "fields": ["TEXT SEARCH"],
+                        "template": "TEXT SEARCH = '{value}'",
+                        "combine_operator": " OR "
+                    },
+                    "sha256": {
+                        "fields": ["TEXT SEARCH"],
+                        "template": "TEXT SEARCH = '{value}'",
+                        "combine_operator": " OR "
+                    },
+                    "sha512": {
+                        "fields": ["TEXT SEARCH"],
+                        "template": "TEXT SEARCH = '{value}'",
+                        "combine_operator": " OR "
+                    },
+                    "url": {
+                        "fields": ["TEXT SEARCH"],
+                        "template": "TEXT SEARCH = '{value}'",
+                        "combine_operator": " OR "
+                    },
+                    "domain": {
+                        "fields": ["TEXT SEARCH"],
+                        "template": "TEXT SEARCH = '{value}'",
+                        "combine_operator": " OR "
+                    }
+                }
+            },
+            "Splunk": {
+                "language": "SPL",
+                "field_mappings": {
+                    "ipv4": {
+                        "fields": ["src_ip", "dest_ip", "src", "dest", "clientip", "remote_ip"],
+                        "template": "{field}=\"{value}\"",
+                        "combine_operator": " OR "
+                    },
+                    "md5": {
+                        "fields": ["file_hash", "hash", "md5", "file_md5"],
+                        "template": "{field}=\"{value}\"",
+                        "combine_operator": " OR "
+                    },
+                    "sha1": {
+                        "fields": ["file_hash", "hash", "sha1", "file_sha1"],
+                        "template": "{field}=\"{value}\"",
+                        "combine_operator": " OR "
+                    },
+                    "sha256": {
+                        "fields": ["file_hash", "hash", "sha256", "file_sha256"],
+                        "template": "{field}=\"{value}\"",
+                        "combine_operator": " OR "
+                    },
+                    "sha512": {
+                        "fields": ["file_hash", "hash", "sha512", "file_sha512"],
+                        "template": "{field}=\"{value}\"",
+                        "combine_operator": " OR "
+                    },
+                    "url": {
+                        "fields": ["url", "uri", "request_url", "http_url"],
+                        "template": "{field}=\"{value}\"",
+                        "combine_operator": " OR "
+                    },
+                    "domain": {
+                        "fields": ["domain", "dest_domain", "dns_query", "hostname"],
+                        "template": "{field}=\"{value}\"",
+                        "combine_operator": " OR "
+                    }
+                }
+            },
+            "ArcSight": {
+                "language": "CEF",
+                "field_mappings": {
+                    "ipv4": {
+                        "fields": ["deviceAddress", "sourceAddress", "destinationAddress"],
+                        "template": "{field} = \"{value}\"",
+                        "combine_operator": " OR "
+                    },
+                    "md5": {
+                        "fields": ["fileHash", "oldFileHash", "cs1", "cs2"],
+                        "template": "{field} = \"{value}\"",
+                        "combine_operator": " OR "
+                    },
+                    "sha1": {
+                        "fields": ["fileHash", "oldFileHash", "cs1", "cs2"],
+                        "template": "{field} = \"{value}\"",
+                        "combine_operator": " OR "
+                    },
+                    "sha256": {
+                        "fields": ["fileHash", "oldFileHash", "cs1", "cs2"],
+                        "template": "{field} = \"{value}\"",
+                        "combine_operator": " OR "
+                    },
+                    "sha512": {
+                        "fields": ["fileHash", "oldFileHash", "cs1", "cs2"],
+                        "template": "{field} = \"{value}\"",
+                        "combine_operator": " OR "
+                    },
+                    "url": {
+                        "fields": ["requestURL", "request", "cs3", "cs4"],
+                        "template": "{field} = \"{value}\"",
+                        "combine_operator": " OR "
+                    },
+                    "domain": {
+                        "fields": ["destinationDnsDomain", "sourceDnsDomain", "cs5", "cs6"],
+                        "template": "{field} = \"{value}\"",
+                        "combine_operator": " OR "
+                    }
+                }
+            }
         };
 
         this.sampleText = `Threat Report: APT29 Campaign Analysis
@@ -29,6 +224,7 @@ IP Addresses:
 - 192.168.1.100 (C2 server)
 - 10.0.0.25 (infected host)
 - 203.0.113.45 (exfiltration server)
+- 198.51.100.42 (beacon server)
 
 File Hashes:
 MD5: 5d41402abc4b2a76b9719d911017c592
@@ -40,13 +236,16 @@ URLs:
 - https://malicious-domain.com/payload.exe
 - http://evil-site.org/data-exfil
 - https://c2-server.net/beacon
+- https://apt29-infrastructure.com/command
 
 Domains:
 - malicious-domain.com
 - evil-site.org
-- c2-server.net`;
+- c2-server.net
+- apt29-infrastructure.com`;
 
         this.currentResults = null;
+        this.currentPlatform = 'Elastic SIEM';
         this.copyCounter = 0;
     }
 
@@ -62,6 +261,7 @@ Domains:
         this.bindEvents();
         this.updateUI();
         this.setupTextareaFeatures();
+        this.updatePlatformUI();
     }
 
     bindEvents() {
@@ -83,10 +283,32 @@ Domains:
             loadSampleBtn.addEventListener('click', () => this.loadSample());
         }
 
-        // Export button
-        const exportBtn = document.getElementById('exportBtn');
-        if (exportBtn) {
-            exportBtn.addEventListener('click', () => this.exportResults());
+        // SIEM platform selector
+        const siemSelect = document.getElementById('siemSelect');
+        if (siemSelect) {
+            siemSelect.addEventListener('change', (e) => {
+                this.currentPlatform = e.target.value;
+                this.updatePlatformUI();
+                if (this.currentResults) {
+                    this.regenerateQueries();
+                }
+            });
+        }
+
+        // Export buttons
+        const bulkCopyBtn = document.getElementById('bulkCopyBtn');
+        if (bulkCopyBtn) {
+            bulkCopyBtn.addEventListener('click', () => this.bulkCopyQueries());
+        }
+
+        const exportTxtBtn = document.getElementById('exportTxtBtn');
+        if (exportTxtBtn) {
+            exportTxtBtn.addEventListener('click', () => this.exportTxt());
+        }
+
+        const exportJsonBtn = document.getElementById('exportJsonBtn');
+        if (exportJsonBtn) {
+            exportJsonBtn.addEventListener('click', () => this.exportJson());
         }
 
         // Keyboard shortcuts
@@ -112,21 +334,28 @@ Domains:
         const charCount = document.getElementById('charCount');
         
         if (textarea && charCount) {
-            // Auto-resize and character counting
             const updateTextarea = () => {
-                // Update character count
                 charCount.textContent = textarea.value.length.toLocaleString();
-                
-                // Auto-resize
                 textarea.style.height = 'auto';
                 textarea.style.height = Math.max(300, textarea.scrollHeight) + 'px';
             };
 
             textarea.addEventListener('input', updateTextarea);
             textarea.addEventListener('paste', () => setTimeout(updateTextarea, 10));
-
-            // Initial character count
             charCount.textContent = '0';
+        }
+    }
+
+    updatePlatformUI() {
+        const queryLanguage = document.getElementById('queryLanguage');
+        const platformBadge = document.getElementById('platformBadge');
+        
+        if (queryLanguage && this.siemMappings[this.currentPlatform]) {
+            queryLanguage.textContent = this.siemMappings[this.currentPlatform].language;
+        }
+        
+        if (platformBadge) {
+            platformBadge.textContent = this.currentPlatform;
         }
     }
 
@@ -138,9 +367,6 @@ Domains:
         }
 
         const input = textarea.value;
-        console.log('Input text:', input);
-        console.log('Input length:', input.length);
-        console.log('Input trimmed length:', input.trim().length);
         
         if (!input || input.trim().length === 0) {
             this.showToast('Please enter some text to analyze', 'error');
@@ -151,27 +377,35 @@ Domains:
         const originalHtml = extractBtn ? extractBtn.innerHTML : '';
 
         try {
-            // Show loading state
             if (extractBtn) {
                 extractBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i><span>Processing...</span>';
                 extractBtn.disabled = true;
                 extractBtn.classList.add('loading');
             }
 
-            // Process the text immediately for better UX
-            const results = this.analyzeText(input);
-            console.log('Analysis results:', results);
-            
-            this.currentResults = results;
-            this.displayResults(results);
-            
-            this.showToast('IOCs extracted successfully!');
+            // Small delay to show loading state
+            setTimeout(() => {
+                try {
+                    const results = this.analyzeText(input);
+                    console.log('Analyzed results:', results);
+                    this.currentResults = results;
+                    this.displayResults(results);
+                    this.showToast('IOCs extracted successfully!');
+                } catch (error) {
+                    console.error('Error during analysis:', error);
+                    this.showToast('Error during IOC extraction: ' + error.message, 'error');
+                } finally {
+                    if (extractBtn) {
+                        extractBtn.innerHTML = originalHtml;
+                        extractBtn.disabled = false;
+                        extractBtn.classList.remove('loading');
+                    }
+                }
+            }, 500);
             
         } catch (error) {
             console.error('Error during IOC extraction:', error);
             this.showToast('Error during IOC extraction: ' + error.message, 'error');
-        } finally {
-            // Restore button state
             if (extractBtn) {
                 extractBtn.innerHTML = originalHtml;
                 extractBtn.disabled = false;
@@ -251,7 +485,7 @@ Domains:
                 }
             });
 
-            console.log('Final results:', {
+            console.log('Final analysis results:', {
                 ips: Array.from(results.ips),
                 hashes: Object.fromEntries(Object.entries(results.hashes).map(([k, v]) => [k, Array.from(v)])),
                 urls: Array.from(results.urls),
@@ -290,7 +524,6 @@ Domains:
             'localhost', 'test.com', 'test.org'
         ];
         
-        // Check if it's a very common domain we want to exclude
         const isCommon = commonDomains.some(common => domain.includes(common));
         const isTooShort = domain.length < 4;
         const hasValidTLD = /\.[a-zA-Z]{2,}$/.test(domain);
@@ -298,21 +531,76 @@ Domains:
         return isCommon || isTooShort || !hasValidTLD;
     }
 
+    buildPlatformQuery(iocType, values, platformConfig) {
+        if (!values || values.length === 0) return '';
+        
+        const fieldMapping = platformConfig.field_mappings[iocType];
+        if (!fieldMapping) return '';
+        
+        const { fields, template, combine_operator } = fieldMapping;
+        
+        // Build queries for each value
+        const valueQueries = values.map(value => {
+            const fieldQueries = fields.map(field => {
+                return template
+                    .replace('{field}', field)
+                    .replace('{value}', this.escapeQueryValue(value, platformConfig.language));
+            });
+            
+            return fieldQueries.length === 1 
+                ? fieldQueries[0] 
+                : `(${fieldQueries.join(combine_operator)})`;
+        });
+        
+        // Combine all value queries
+        return valueQueries.length === 1 
+            ? valueQueries[0] 
+            : `(${valueQueries.join(' OR ')})`;
+    }
+
+    escapeQueryValue(value, language) {
+        switch (language) {
+            case 'KQL':
+                return value.replace(/[\\:"()]/g, '\\$&');
+            case 'SPL':
+                return value.replace(/[\\:"]/g, '\\$&');
+            case 'AQL':
+                return value.replace(/'/g, "''");
+            case 'CEF':
+                return value.replace(/[\\:"]/g, '\\$&');
+            default:
+                return value;
+        }
+    }
+
+    regenerateQueries() {
+        if (!this.currentResults) return;
+        
+        console.log('Regenerating queries for platform:', this.currentPlatform);
+        this.updatePlatformUI();
+        this.updateQueriesPanel(this.currentResults);
+        this.showToast(`Queries updated for ${this.currentPlatform}!`);
+    }
+
     displayResults(results) {
         try {
+            console.log('Displaying results:', results);
+            
             const resultsSection = document.getElementById('resultsSection');
             const emptyState = document.getElementById('emptyState');
+
+            console.log('Found elements:', { resultsSection: !!resultsSection, emptyState: !!emptyState });
 
             if (resultsSection && emptyState) {
                 resultsSection.classList.remove('hidden');
                 emptyState.classList.add('hidden');
+                console.log('Toggled visibility');
             }
 
             this.updateStatsCards(results);
             this.updateIOCsPanel(results);
-            this.updateKQLPanel(results);
+            this.updateQueriesPanel(results);
             
-            // Scroll to results
             setTimeout(() => {
                 resultsSection?.scrollIntoView({ behavior: 'smooth', block: 'start' });
             }, 100);
@@ -325,9 +613,17 @@ Domains:
 
     updateStatsCards(results) {
         const statsCards = document.getElementById('statsCards');
+        console.log('Updating stats cards, element found:', !!statsCards);
+        
         if (!statsCards) return;
 
         const totalHashes = Object.values(results.hashes).reduce((sum, set) => sum + set.size, 0);
+        console.log('Stats:', {
+            ips: results.ips.size,
+            hashes: totalHashes,
+            urls: results.urls.size,
+            domains: results.domains.size
+        });
 
         statsCards.innerHTML = `
             <div class="stat-card stat-card--ip">
@@ -347,10 +643,13 @@ Domains:
                 <div class="stat-label">Domains</div>
             </div>
         `;
+        console.log('Stats cards updated');
     }
 
     updateIOCsPanel(results) {
         const iocsContent = document.getElementById('iocsContent');
+        console.log('Updating IOCs panel, element found:', !!iocsContent);
+        
         if (!iocsContent) return;
 
         let html = '';
@@ -383,6 +682,7 @@ Domains:
         }
 
         iocsContent.innerHTML = html;
+        console.log('IOCs panel updated');
     }
 
     createIOCGroup(title, items, icon) {
@@ -402,80 +702,70 @@ Domains:
         `;
     }
 
-    updateKQLPanel(results) {
-        const kqlContent = document.getElementById('kqlContent');
-        if (!kqlContent) return;
+    updateQueriesPanel(results) {
+        const queriesContent = document.getElementById('queriesContent');
+        console.log('Updating queries panel, element found:', !!queriesContent);
+        
+        if (!queriesContent) return;
 
+        const platformConfig = this.siemMappings[this.currentPlatform];
+        console.log('Platform config:', this.currentPlatform, platformConfig);
+        
         let html = '';
 
         if (results.ips.size > 0) {
-            html += this.createKQLGroup('IP Addresses', this.generateIPKQL(Array.from(results.ips)), 'fas fa-network-wired');
+            const query = this.buildPlatformQuery('ipv4', Array.from(results.ips), platformConfig);
+            console.log('Generated IP query:', query);
+            html += this.createQueryGroup('IP Addresses', query, 'fas fa-network-wired');
         }
 
         Object.entries(results.hashes).forEach(([type, hashSet]) => {
             if (hashSet.size > 0) {
-                html += this.createKQLGroup(`${type.toUpperCase()} Hashes`, this.generateHashKQL(type, Array.from(hashSet)), 'fas fa-fingerprint');
+                const query = this.buildPlatformQuery(type, Array.from(hashSet), platformConfig);
+                console.log(`Generated ${type} query:`, query);
+                html += this.createQueryGroup(`${type.toUpperCase()} Hashes`, query, 'fas fa-fingerprint');
             }
         });
 
         if (results.urls.size > 0) {
-            html += this.createKQLGroup('URLs', this.generateURLKQL(Array.from(results.urls)), 'fas fa-link');
+            const query = this.buildPlatformQuery('url', Array.from(results.urls), platformConfig);
+            console.log('Generated URL query:', query);
+            html += this.createQueryGroup('URLs', query, 'fas fa-link');
         }
 
         if (results.domains.size > 0) {
-            html += this.createKQLGroup('Domains', this.generateDomainKQL(Array.from(results.domains)), 'fas fa-globe');
+            const query = this.buildPlatformQuery('domain', Array.from(results.domains), platformConfig);
+            console.log('Generated domain query:', query);
+            html += this.createQueryGroup('Domains', query, 'fas fa-globe');
         }
 
         if (!html) {
             html = `
                 <div class="empty-results">
                     <i class="fas fa-code" style="font-size: 48px; color: var(--color-text-secondary); margin-bottom: 16px;"></i>
-                    <p style="color: var(--color-text-secondary); text-align: center; margin: 0;">No KQL queries generated.</p>
+                    <p style="color: var(--color-text-secondary); text-align: center; margin: 0;">No queries generated.</p>
                 </div>
             `;
         }
 
-        kqlContent.innerHTML = html;
+        queriesContent.innerHTML = html;
+        console.log('Queries panel updated with HTML length:', html.length);
     }
 
-    generateIPKQL(ips) {
-        const queries = ips.map(ip => `(source.ip:"${ip}" OR destination.ip:"${ip}")`);
-        return queries.length === 1 ? queries[0] : `(${queries.join(' OR ')})`;
-    }
-
-    generateHashKQL(type, hashes) {
-        const fields = this.ecsMapping[type];
-        const queries = hashes.map(hash => {
-            const fieldQueries = fields.map(field => `${field}:"${hash}"`);
-            return `(${fieldQueries.join(' OR ')})`;
-        });
-        return queries.length === 1 ? queries[0] : `(${queries.join(' OR ')})`;
-    }
-
-    generateURLKQL(urls) {
-        const queries = urls.map(url => `url.original:"${this.escapeKQL(url)}"`);
-        return queries.length === 1 ? queries[0] : `(${queries.join(' OR ')})`;
-    }
-
-    generateDomainKQL(domains) {
-        const queries = domains.map(domain => `(destination.domain:"${domain}" OR source.domain:"${domain}")`);
-        return queries.length === 1 ? queries[0] : `(${queries.join(' OR ')})`;
-    }
-
-    createKQLGroup(title, query, icon) {
+    createQueryGroup(title, query, icon) {
         this.copyCounter++;
-        const queryId = `kql_${this.copyCounter}`;
+        const queryId = `query_${this.copyCounter}`;
         
         return `
-            <div class="kql-group">
-                <h4 class="kql-group-title">
+            <div class="query-group">
+                <h4 class="query-group-title">
                     <i class="${icon}"></i>
                     ${title}
                 </h4>
-                <div class="kql-query">
-                    <div class="kql-content" id="${queryId}">${this.escapeHtml(query)}</div>
-                    <div class="kql-actions">
-                        <button class="copy-btn" onclick="window.iocHunter.copyKQL('${queryId}', this)">
+                <div class="query-block">
+                    <div class="query-content" id="${queryId}">${this.escapeHtml(query)}</div>
+                    <div class="query-actions">
+                        <button class="copy-btn" onclick="window.multiSiemIOCHunter.copyQuery('${queryId}', this)">
                             <i class="fas fa-copy"></i>
                             Copy Query
                         </button>
@@ -485,13 +775,12 @@ Domains:
         `;
     }
 
-    copyKQL(elementId, button) {
+    copyQuery(elementId, button) {
         const element = document.getElementById(elementId);
         if (!element) return;
         
         const text = element.textContent;
         
-        // Try modern clipboard API first
         if (navigator.clipboard && navigator.clipboard.writeText) {
             navigator.clipboard.writeText(text).then(() => {
                 this.updateCopyButton(button);
@@ -539,6 +828,280 @@ Domains:
         }, 2000);
     }
 
+    bulkCopyQueries() {
+        if (!this.currentResults) {
+            this.showToast('No queries to copy. Please extract IOCs first.', 'error');
+            return;
+        }
+
+        const queries = this.getAllQueries();
+        const allQueriesText = queries.join('\n\n');
+
+        if (navigator.clipboard && navigator.clipboard.writeText) {
+            navigator.clipboard.writeText(allQueriesText).then(() => {
+                this.showToast(`All ${queries.length} queries copied to clipboard!`);
+            }).catch(() => {
+                this.fallbackBulkCopy(allQueriesText);
+            });
+        } else {
+            this.fallbackBulkCopy(allQueriesText);
+        }
+    }
+
+    fallbackBulkCopy(text) {
+        const textArea = document.createElement('textarea');
+        textArea.value = text;
+        textArea.style.position = 'fixed';
+        textArea.style.left = '-9999px';
+        textArea.style.top = '-9999px';
+        document.body.appendChild(textArea);
+        textArea.select();
+        
+        try {
+            const successful = document.execCommand('copy');
+            if (successful) {
+                this.showToast('All queries copied to clipboard!');
+            } else {
+                this.showToast('Bulk copy failed', 'error');
+            }
+        } catch (err) {
+            this.showToast('Bulk copy failed', 'error');
+        }
+        
+        document.body.removeChild(textArea);
+    }
+
+    getAllQueries() {
+        if (!this.currentResults) return [];
+
+        const platformConfig = this.siemMappings[this.currentPlatform];
+        const queries = [];
+
+        if (this.currentResults.ips.size > 0) {
+            queries.push(this.buildPlatformQuery('ipv4', Array.from(this.currentResults.ips), platformConfig));
+        }
+
+        Object.entries(this.currentResults.hashes).forEach(([type, hashSet]) => {
+            if (hashSet.size > 0) {
+                queries.push(this.buildPlatformQuery(type, Array.from(hashSet), platformConfig));
+            }
+        });
+
+        if (this.currentResults.urls.size > 0) {
+            queries.push(this.buildPlatformQuery('url', Array.from(this.currentResults.urls), platformConfig));
+        }
+
+        if (this.currentResults.domains.size > 0) {
+            queries.push(this.buildPlatformQuery('domain', Array.from(this.currentResults.domains), platformConfig));
+        }
+
+        return queries;
+    }
+
+    exportTxt() {
+        if (!this.currentResults) {
+            this.showToast('No results to export. Please extract IOCs first.', 'error');
+            return;
+        }
+
+        try {
+            const exportData = this.generateTxtExport();
+            this.downloadFile(exportData, 'text/plain', `ioc-hunter-${this.currentPlatform.toLowerCase().replace(/\s+/g, '-')}-${new Date().toISOString().split('T')[0]}.txt`);
+            this.showToast('TXT export completed successfully!');
+        } catch (error) {
+            console.error('Export error:', error);
+            this.showToast('Error exporting TXT file', 'error');
+        }
+    }
+
+    exportJson() {
+        if (!this.currentResults) {
+            this.showToast('No results to export. Please extract IOCs first.', 'error');
+            return;
+        }
+
+        try {
+            const exportData = this.generateJsonExport();
+            this.downloadFile(exportData, 'application/json', `ioc-hunter-${this.currentPlatform.toLowerCase().replace(/\s+/g, '-')}-${new Date().toISOString().split('T')[0]}.json`);
+            this.showToast('JSON export completed successfully!');
+        } catch (error) {
+            console.error('Export error:', error);
+            this.showToast('Error exporting JSON file', 'error');
+        }
+    }
+
+    generateTxtExport() {
+        const timestamp = new Date().toISOString();
+        const totalHashes = Object.values(this.currentResults.hashes).reduce((sum, set) => sum + set.size, 0);
+        const totalIOCs = this.currentResults.ips.size + totalHashes + this.currentResults.urls.size + this.currentResults.domains.size;
+
+        let exportData = `IOC Hunter – Multi-SIEM Export
+===============================================
+Generated: ${new Date().toLocaleString()}
+Platform: ${this.currentPlatform}
+Query Language: ${this.siemMappings[this.currentPlatform].language}
+Author: SOC Team Lead
+Title: Cyber Security (SOC) Team Lead
+Location: Jagtial, TS
+Tool: IOC Hunter Multi-SIEM v3.0
+
+===============================================
+SUMMARY STATISTICS
+===============================================
+Total IOCs Found: ${totalIOCs}
+- IP Addresses: ${this.currentResults.ips.size}
+- File Hashes: ${totalHashes}
+- URLs: ${this.currentResults.urls.size}
+- Domains: ${this.currentResults.domains.size}
+
+===============================================
+GENERATED QUERIES (${this.siemMappings[this.currentPlatform].language})
+===============================================
+
+`;
+
+        const queries = this.getAllQueries();
+        const types = [];
+        
+        if (this.currentResults.ips.size > 0) types.push('IP Addresses');
+        Object.entries(this.currentResults.hashes).forEach(([type, hashSet]) => {
+            if (hashSet.size > 0) types.push(`${type.toUpperCase()} Hashes`);
+        });
+        if (this.currentResults.urls.size > 0) types.push('URLs');
+        if (this.currentResults.domains.size > 0) types.push('Domains');
+
+        queries.forEach((query, index) => {
+            exportData += `${types[index]}:\n`;
+            exportData += `${'-'.repeat(40)}\n`;
+            exportData += `${query}\n\n`;
+        });
+
+        exportData += `===============================================
+EXTRACTED INDICATORS OF COMPROMISE (IOCs)
+===============================================
+
+`;
+
+        // Export IOCs
+        if (this.currentResults.ips.size > 0) {
+            exportData += `IP ADDRESSES (${this.currentResults.ips.size}):\n`;
+            exportData += `${'-'.repeat(40)}\n`;
+            Array.from(this.currentResults.ips).forEach((ip, index) => {
+                exportData += `${(index + 1).toString().padStart(3)}. ${ip}\n`;
+            });
+            exportData += '\n';
+        }
+
+        Object.entries(this.currentResults.hashes).forEach(([type, hashSet]) => {
+            if (hashSet.size > 0) {
+                exportData += `${type.toUpperCase()} HASHES (${hashSet.size}):\n`;
+                exportData += `${'-'.repeat(40)}\n`;
+                Array.from(hashSet).forEach((hash, index) => {
+                    exportData += `${(index + 1).toString().padStart(3)}. ${hash}\n`;
+                });
+                exportData += '\n';
+            }
+        });
+
+        if (this.currentResults.urls.size > 0) {
+            exportData += `URLS (${this.currentResults.urls.size}):\n`;
+            exportData += `${'-'.repeat(40)}\n`;
+            Array.from(this.currentResults.urls).forEach((url, index) => {
+                exportData += `${(index + 1).toString().padStart(3)}. ${url}\n`;
+            });
+            exportData += '\n';
+        }
+
+        if (this.currentResults.domains.size > 0) {
+            exportData += `DOMAINS (${this.currentResults.domains.size}):\n`;
+            exportData += `${'-'.repeat(40)}\n`;
+            Array.from(this.currentResults.domains).forEach((domain, index) => {
+                exportData += `${(index + 1).toString().padStart(3)}. ${domain}\n`;
+            });
+            exportData += '\n';
+        }
+
+        exportData += `===============================================
+NOTES
+===============================================
+- Queries generated for ${this.currentPlatform} platform
+- Test queries in your environment before production use
+- Consider adding time ranges and additional filters as needed
+- For questions or support, contact the SOC Team
+
+Generated by IOC Hunter Multi-SIEM v3.0
+Author: SOC Team Lead, Cyber Security (SOC) Team Lead
+Location: Jagtial, TS
+Bio: Specialized in threat hunting, malware analysis, and security operations
+===============================================`;
+
+        return exportData;
+    }
+
+    generateJsonExport() {
+        const queries = this.getAllQueries();
+        const queryTypes = [];
+        
+        if (this.currentResults.ips.size > 0) queryTypes.push('ip_addresses');
+        Object.entries(this.currentResults.hashes).forEach(([type, hashSet]) => {
+            if (hashSet.size > 0) queryTypes.push(`${type}_hashes`);
+        });
+        if (this.currentResults.urls.size > 0) queryTypes.push('urls');
+        if (this.currentResults.domains.size > 0) queryTypes.push('domains');
+
+        const queriesObject = {};
+        queries.forEach((query, index) => {
+            queriesObject[queryTypes[index]] = query;
+        });
+
+        const exportData = {
+            metadata: {
+                generated_at: new Date().toISOString(),
+                generator: "IOC Hunter Multi-SIEM v3.0",
+                platform: this.currentPlatform,
+                query_language: this.siemMappings[this.currentPlatform].language,
+                author: {
+                    name: "SOC Team Lead",
+                    title: "Cyber Security (SOC) Team Lead",
+                    location: "Jagtial, TS"
+                }
+            },
+            statistics: {
+                total_iocs: this.currentResults.ips.size + 
+                           Object.values(this.currentResults.hashes).reduce((sum, set) => sum + set.size, 0) +
+                           this.currentResults.urls.size + 
+                           this.currentResults.domains.size,
+                ip_addresses: this.currentResults.ips.size,
+                file_hashes: Object.values(this.currentResults.hashes).reduce((sum, set) => sum + set.size, 0),
+                urls: this.currentResults.urls.size,
+                domains: this.currentResults.domains.size
+            },
+            iocs: {
+                ip_addresses: Array.from(this.currentResults.ips),
+                hashes: Object.fromEntries(
+                    Object.entries(this.currentResults.hashes).map(([k, v]) => [k, Array.from(v)])
+                ),
+                urls: Array.from(this.currentResults.urls),
+                domains: Array.from(this.currentResults.domains)
+            },
+            queries: queriesObject
+        };
+
+        return JSON.stringify(exportData, null, 2);
+    }
+
+    downloadFile(content, mimeType, filename) {
+        const blob = new Blob([content], { type: mimeType });
+        const url = URL.createObjectURL(blob);
+        const link = document.createElement('a');
+        link.href = url;
+        link.download = filename;
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        URL.revokeObjectURL(url);
+    }
+
     clearInput() {
         const textarea = document.getElementById('iocInput');
         const charCount = document.getElementById('charCount');
@@ -564,162 +1127,15 @@ Domains:
 
     loadSample() {
         const textarea = document.getElementById('iocInput');
-        const charCount = document.getElementById('charCount');
         
         if (textarea) {
             textarea.value = this.sampleText;
             
-            // Trigger the input event to update character count and auto-resize
             const event = new Event('input', { bubbles: true });
             textarea.dispatchEvent(event);
         }
         
         this.showToast('Sample data loaded - Click Extract IOCs to analyze');
-    }
-
-    exportResults() {
-        if (!this.currentResults) {
-            this.showToast('No results to export. Please extract IOCs first.', 'error');
-            return;
-        }
-
-        try {
-            const timestamp = new Date().toISOString();
-            const exportData = this.generateExportData(timestamp);
-            
-            // Create download
-            const blob = new Blob([exportData], { type: 'text/plain' });
-            const url = URL.createObjectURL(blob);
-            const link = document.createElement('a');
-            link.href = url;
-            link.download = `ioc-hunter-results-${new Date().toISOString().split('T')[0]}.txt`;
-            document.body.appendChild(link);
-            link.click();
-            document.body.removeChild(link);
-            URL.revokeObjectURL(url);
-
-            this.showToast('Results exported successfully!');
-        } catch (error) {
-            console.error('Export error:', error);
-            this.showToast('Error exporting results', 'error');
-        }
-    }
-
-    generateExportData(timestamp) {
-        let exportData = `IOC Hunter - Extraction Results
-===========================================
-Generated: ${new Date().toLocaleString()}
-Author: SOC Team Lead
-Title: Cyber Security (SOC) Team Lead
-Location: Jagtial, TS
-Tool: IOC Hunter v2.0
-
-===========================================
-SUMMARY STATISTICS
-===========================================
-`;
-
-        const totalHashes = Object.values(this.currentResults.hashes).reduce((sum, set) => sum + set.size, 0);
-        const totalIOCs = this.currentResults.ips.size + totalHashes + this.currentResults.urls.size + this.currentResults.domains.size;
-
-        exportData += `Total IOCs Found: ${totalIOCs}
-- IP Addresses: ${this.currentResults.ips.size}
-- File Hashes: ${totalHashes}
-- URLs: ${this.currentResults.urls.size}
-- Domains: ${this.currentResults.domains.size}
-
-===========================================
-EXTRACTED INDICATORS OF COMPROMISE (IOCs)
-===========================================
-
-`;
-
-        // Export IPs
-        if (this.currentResults.ips.size > 0) {
-            exportData += `IP ADDRESSES (${this.currentResults.ips.size}):\n`;
-            exportData += '─'.repeat(40) + '\n';
-            Array.from(this.currentResults.ips).forEach((ip, index) => {
-                exportData += `${(index + 1).toString().padStart(3)}. ${ip}\n`;
-            });
-            exportData += '\n';
-        }
-
-        // Export Hashes
-        Object.entries(this.currentResults.hashes).forEach(([type, hashSet]) => {
-            if (hashSet.size > 0) {
-                exportData += `${type.toUpperCase()} HASHES (${hashSet.size}):\n`;
-                exportData += '─'.repeat(40) + '\n';
-                Array.from(hashSet).forEach((hash, index) => {
-                    exportData += `${(index + 1).toString().padStart(3)}. ${hash}\n`;
-                });
-                exportData += '\n';
-            }
-        });
-
-        // Export URLs
-        if (this.currentResults.urls.size > 0) {
-            exportData += `URLS (${this.currentResults.urls.size}):\n`;
-            exportData += '─'.repeat(40) + '\n';
-            Array.from(this.currentResults.urls).forEach((url, index) => {
-                exportData += `${(index + 1).toString().padStart(3)}. ${url}\n`;
-            });
-            exportData += '\n';
-        }
-
-        // Export Domains
-        if (this.currentResults.domains.size > 0) {
-            exportData += `DOMAINS (${this.currentResults.domains.size}):\n`;
-            exportData += '─'.repeat(40) + '\n';
-            Array.from(this.currentResults.domains).forEach((domain, index) => {
-                exportData += `${(index + 1).toString().padStart(3)}. ${domain}\n`;
-            });
-            exportData += '\n';
-        }
-
-        exportData += `===========================================
-GENERATED KQL QUERIES (ECS FIELDS)
-===========================================
-
-`;
-
-        // Export KQL queries
-        if (this.currentResults.ips.size > 0) {
-            exportData += `IP ADDRESSES KQL:\n`;
-            exportData += `${this.generateIPKQL(Array.from(this.currentResults.ips))}\n\n`;
-        }
-
-        Object.entries(this.currentResults.hashes).forEach(([type, hashSet]) => {
-            if (hashSet.size > 0) {
-                exportData += `${type.toUpperCase()} HASHES KQL:\n`;
-                exportData += `${this.generateHashKQL(type, Array.from(hashSet))}\n\n`;
-            }
-        });
-
-        if (this.currentResults.urls.size > 0) {
-            exportData += `URLS KQL:\n`;
-            exportData += `${this.generateURLKQL(Array.from(this.currentResults.urls))}\n\n`;
-        }
-
-        if (this.currentResults.domains.size > 0) {
-            exportData += `DOMAINS KQL:\n`;
-            exportData += `${this.generateDomainKQL(Array.from(this.currentResults.domains))}\n\n`;
-        }
-
-        exportData += `===========================================
-NOTES
-===========================================
-- All queries use Elastic Common Schema (ECS) field mappings
-- Test queries in your environment before production use
-- Consider adding time ranges and additional filters as needed
-- For questions or support, contact the SOC Team
-
-Generated by IOC Hunter v2.0
-Author: SOC Team Lead, Cyber Security (SOC) Team Lead
-Location: Jagtial, TS
-Bio: Specialized in threat hunting, malware analysis, and security operations
-===========================================`;
-
-        return exportData;
     }
 
     showToast(message, type = 'success') {
@@ -730,7 +1146,6 @@ Bio: Specialized in threat hunting, malware analysis, and security operations
         if (toast && toastMessage) {
             toastMessage.textContent = message;
             
-            // Set icon based on type
             if (toastIcon) {
                 toastIcon.className = `toast-icon fas ${type === 'error' ? 'fa-exclamation-triangle' : 'fa-check-circle'}`;
             }
@@ -756,12 +1171,8 @@ Bio: Specialized in threat hunting, malware analysis, and security operations
         div.textContent = text;
         return div.innerHTML;
     }
-
-    escapeKQL(text) {
-        return text.replace(/[\\:"()]/g, '\\$&');
-    }
 }
 
-// Initialize the application - using consistent naming
-window.iocHunter = new ModernIOCHunter();
-window.iocHunter.init();
+// Initialize the application
+window.multiSiemIOCHunter = new MultiSIEMIOCHunter();
+window.multiSiemIOCHunter.init();
